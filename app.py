@@ -19,31 +19,6 @@ def bubble_sort(arr):
                 steps.append(arr.copy())
     return steps
 
-def insertion_sort(arr):
-    arr = arr.copy()
-    steps = []
-    for i in range(1, len(arr)):
-        key = arr[i]
-        j = i-1
-        while j >= 0 and key < arr[j]:
-            arr[j + 1] = arr[j]
-            j -= 1
-        arr[j + 1] = key
-        steps.append(arr.copy())
-    return steps
-
-def selection_sort(arr):
-    arr = arr.copy()
-    steps = []
-    for i in range(len(arr)):
-        min_idx = i
-        for j in range(i+1, len(arr)):
-            if arr[j] < arr[min_idx]:
-                min_idx = j
-        arr[i], arr[min_idx] = arr[min_idx], arr[i]
-        steps.append(arr.copy())
-    return steps
-
 # Create a visualization for the steps
 def create_plot(steps):
     images = []
@@ -75,10 +50,6 @@ def visualize():
         # Select the appropriate algorithm
         if algorithm == 'bubble':
             steps = bubble_sort(arr)
-        elif algorithm == 'insertion':
-            steps = insertion_sort(arr)
-        elif algorithm == 'selection':
-            steps = selection_sort(arr)
         else:
             return redirect(url_for('index'))
         
