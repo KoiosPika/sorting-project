@@ -145,6 +145,12 @@ def visualize():
         # Select the appropriate algorithm
         if algorithm == 'bubble':
             steps = bubble_sort(arr)
+        elif algorithm == 'merge':
+            steps = merge_sort(arr)
+        elif algorithm == 'quick_sort':
+            steps = quick_sort(arr)
+        elif algorithm == 'radix_sort':
+            steps = radix_sort(arr)
         else:
             return redirect(url_for('index'))
         
