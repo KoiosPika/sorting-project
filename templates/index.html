@@ -1,26 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sorting Visualizer</title>
+    <title>Sorting Algorithm Performance Visualizer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script>
+        function setFormAction(action) {
+            const form = document.getElementById('sortForm');
+            if (action === 'performance') {
+                form.action = "{{ url_for('visualize') }}";
+            } else if (action === 'animate') {
+                form.action = "{{ url_for('visualize_animation') }}";
+            }
+        }
+    </script>
 </head>
+
 <body>
     <div class="container">
-        <h1>Sorting Algorithm Visualizer</h1>
-        <form action="{{ url_for('visualize') }}" method="POST">
-            <label for="algorithm">Choose Sorting Algorithm:</label>
-            <select id="algorithm" name="algorithm">
-                <option value="bubble">Bubble Sort</option>
-                <option value="merge">Merge Sort</option>
-                <option value="quick">Quick Sort</option>
-                <option value="radix">Radix Sort</option>
-            </select>
+        <h1>Sorting Algorithm Performance Visualizer</h1>
+        <form id="sortForm" action="{{ url_for('visualize') }}" method="POST">
             <label for="size">Array Size:</label>
-            <input type="number" id="size" name="size" min="5" max="1000" value="10">
-            <button type="submit">Visualize</button>
+            <input type="number" id="size" name="size" min="2" value="100">
+
+            <h2>Select Sorting Algorithms to Visualize:</h2>
+            <label><input type="checkbox" name="algorithms" value="Bubble Sort"> Bubble Sort</label><br>
+            <label><input type="checkbox" name="algorithms" value="Merge Sort"> Merge Sort</label><br>
+            <label><input type="checkbox" name="algorithms" value="Quick Sort"> Quick Sort</label><br>
+            <label><input type="checkbox" name="algorithms" value="Radix Sort"> Radix Sort</label><br>
+
+            <button type="submit" class="btn" name="action" value="performance" onclick="setFormAction('performance')">Visualize Performance</button>
+            <button type="submit" class="btn" name="action" value="animate" onclick="setFormAction('animate')">Visualize Sorting Steps</button>
         </form>
     </div>
 </body>
+
 </html>

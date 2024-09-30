@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting Visualization Animation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script>
+        let allImages = JSON.parse('{{ all_images | tojson | safe }}');
+        let currentAlgorithm = Object.keys(allImages)[0];
+        let currentIndex = 0;
+        let interval;
+        let isPlaying = false;
+
+        function playAnimation() {
+            if (!isPlaying) {
+                isPlaying = true;
+                interval = setInterval(() => {
+                    let images = allImages[currentAlgorithm];
+                    if (currentIndex >= images.length) {
+                        currentIndex = 0; // Loop back to the start
+                    }
+                    document.getElementById("sortingImage").src = images[currentIndex];
+                    currentIndex++;
+                }, 500); // Adjust the interval for animation speed
+            }
+        }
+
+        function stopAnimation() {
+            clearInterval(interval);
+            isPlaying = false;
+        }
+
+        function changeAlgorithm(algorithm) {
+            stopAnimation();
+            currentAlgorithm = algorithm;
+            currentIndex = 0;
+            document.getElementById("sortingImage").src = allImages[currentAlgorithm][0];
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Sorting Visualization Animation</h1>
+        <div class="controls">
+            <label for="algorithmSelect">Select Algorithm:</label>
+            <select id="algorithmSelect" onchange="changeAlgorithm(this.value)">
+                {% for algorithm in all_images.keys() %}
+                    <option value="{{ algorithm }}">{{ algorithm }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="visualization">
+            <img id="sortingImage" src="{{ all_images[all_images.keys()|list|first][0] }}" alt="Sorting Animation" width="800" height="400">
+        </div>
+        <div class="controls">
+            <button onclick="playAnimation()">Play</button>
+            <button onclick="stopAnimation()">Stop</button>
+        </div>
+    </div>
+</body>
+</html>

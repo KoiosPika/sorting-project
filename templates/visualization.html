@@ -3,18 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sorting Visualization</title>
+    <title>Sorting Performance Visualization</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>Sorting Steps</h1>
+        <h1>Sorting Performance Visualization</h1>
         <div class="visualization">
-            {% for img in images %}
-                <img src="data:image/png;base64,{{ img }}" alt="Sorting step">
-            {% endfor %}
+            <img src="data:image/png;base64,{{ plot_img }}" alt="Sorting Algorithm Performance">
         </div>
-        <a href="{{ url_for('index') }}">Go back</a>
+        <a href="{{ url_for('index') }}" class="btn">Go back</a>
     </div>
 </body>
 </html>

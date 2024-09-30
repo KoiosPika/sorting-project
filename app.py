@@ -1,42 +1,58 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, send_file
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.animation as animation
 import random
-import io
+import pandas as pd
 import base64
+import time
+import tempfile
+import sys, io
 
 app = Flask(__name__)
 
-# Sorting algorithms implementations
+sys.setrecursionlimit(2000)
 
-# Bubble sort
-def bubble_sort(arr):
-    arr = arr.copy()  # Don't modify the original list
-    steps = []
+# Bubble Sort
+def bubble_sort(arr, visualize_steps=False):
+    arr = arr.copy()
     n = len(arr)
-    for i in range(n):
-        for j in range(0, n-i-1):
-            if arr[j] > arr[j+1]:
-                arr[j], arr[j+1] = arr[j+1], arr[j]
-                steps.append(arr.copy())
-    return steps
-
-# Merge sort
-def merge_sort(arr):
+    start_time = time.perf_counter()
     steps = []
+
+    for i in range(n):
+        for j in range(0, n - i - 1):
+            if arr[j] > arr[j + 1]:
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+            if visualize_steps:
+                steps.append(arr.copy())
+
+    full_time = time.perf_counter() - start_time
+
+    if visualize_steps:
+        images = create_plot(steps)
+        return full_time * 1000, images
+    return full_time * 1000
+
+def merge_sort(arr, visualize_steps=False):
+    arr = arr.copy()
+    steps = []
+
     def merge_sort_helper(arr, left, right):
         if left < right:
             mid = (left + right) // 2
             merge_sort_helper(arr, left, mid)
             merge_sort_helper(arr, mid + 1, right)
             merge(arr, left, mid, right)
-            steps.append(arr.copy())
 
     def merge(arr, left, mid, right):
-        left_arr = arr[left:mid+1]
-        right_arr = arr[mid+1:right+1]
+        left_arr = arr[left:mid + 1]
+        right_arr = arr[mid + 1:right + 1]
         i = j = 0
         k = left
+
         while i < len(left_arr) and j < len(right_arr):
             if left_arr[i] <= right_arr[j]:
                 arr[k] = left_arr[i]
@@ -45,53 +61,88 @@ def merge_sort(arr):
                 arr[k] = right_arr[j]
                 j += 1
             k += 1
+            if visualize_steps:
+                steps.append(arr.copy())
+
         while i < len(left_arr):
             arr[k] = left_arr[i]
             i += 1
             k += 1
+            if visualize_steps:
+                steps.append(arr.copy())
+
         while j < len(right_arr):
             arr[k] = right_arr[j]
             j += 1
             k += 1
-
-    merge_sort_helper(arr, 0, len(arr) - 1)
-    return steps
-
-# Quick sort
-def quick_sort(arr):
-    steps = []
-    def partition(arr, low, high):
-        i = low - 1
-        pivot = arr[high]
-        for j in range(low, high):
-            if arr[j] <= pivot:
-                i = i + 1
-                arr[i], arr[j] = arr[j], arr[i]
+            if visualize_steps:
                 steps.append(arr.copy())
-        arr[i+1], arr[high] = arr[high], arr[i+1]
-        steps.append(arr.copy())
-        return i + 1
+
+    start_time = time.perf_counter()
+    merge_sort_helper(arr, 0, len(arr) - 1)
+    total_time = time.perf_counter() - start_time
+    
+    if visualize_steps:
+        images = create_plot(steps)
+        return total_time * 1000, images
+    return total_time * 1000
+
+def quick_sort(arr, visualize_steps=False):
+    arr = arr.copy()
+    steps = []
 
     def quick_sort_helper(arr, low, high):
         if low < high:
             pi = partition(arr, low, high)
-            quick_sort_helper(arr, low, pi-1)
-            quick_sort_helper(arr, pi+1, high)
+            if visualize_steps:
+                steps.append(arr.copy())
+            quick_sort_helper(arr, low, pi - 1)
+            quick_sort_helper(arr, pi + 1, high)
 
-    quick_sort_helper(arr, 0, len(arr)-1)
-    return steps
+    def partition(arr, low, high):
+        pivot = arr[high]
+        i = low - 1
+        for j in range(low, high):
+            if arr[j] <= pivot:
+                i += 1
+                arr[i], arr[j] = arr[j], arr[i]
+                if visualize_steps:
+                    steps.append(arr.copy())
+        arr[i + 1], arr[high] = arr[high], arr[i + 1]
+        if visualize_steps:
+            steps.append(arr.copy())
+        return i + 1
 
-# Radix sort
-def radix_sort(arr):
-    steps = []
+    start_time = time.perf_counter()
+    quick_sort_helper(arr, 0, len(arr) - 1)
+    total_time = time.perf_counter() - start_time
+    
+    if visualize_steps:
+        images = create_plot(steps)
+        return total_time * 1000, images
+    return total_time * 100
+
+def radix_sort(arr, visualize_steps = False):
+    arr = arr.copy()
     max_value = max(arr)
     exp = 1
-    while max_value // exp > 0:
-        counting_sort(arr, exp, steps)
-        exp *= 10
-    return steps
+    start_time = time.perf_counter()
+    steps = []
 
-def counting_sort(arr, exp, steps):
+    while max_value // exp > 0:
+        counting_sort(arr, exp)
+        if visualize_steps:
+            steps.append(arr.copy())
+        exp *= 10
+
+    total_time = time.perf_counter() - start_time
+    
+    if visualize_steps:
+        images = create_plot(steps)
+        return total_time * 1000, images
+    return total_time * 1000
+
+def counting_sort(arr, exp):
     n = len(arr)
     output = [0] * n
     count = [0] * 10
@@ -112,24 +163,57 @@ def counting_sort(arr, exp, steps):
 
     for i in range(n):
         arr[i] = output[i]
-        steps.append(arr.copy())
 
-# Create a visualization for the steps
 def create_plot(steps):
     images = []
-    for step in steps:
-        plt.figure(figsize=(6, 4))
-        plt.bar(range(len(step)), step, color='blue')
-        plt.xlabel('Index')
-        plt.ylabel('Value')
+    for i, step in enumerate(steps):
 
-        img = io.BytesIO()
-        plt.savefig(img, format='png')
-        img.seek(0)
-        img_b64 = base64.b64encode(img.getvalue()).decode('utf8')
+        fig, ax = plt.subplots()
+        ax.bar(range(len(step)), step, color='blue')
+        ax.set_xlabel("Index")
+        ax.set_ylabel("Value")
+        ax.set_title(f"Step {i}")
+
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        buf.seek(0)
         plt.close()
-        images.append(img_b64)
+
+        image_base64 = base64.b64encode(buf.getvalue()).decode('utf8')
+        images.append(f"data:image/png;base64,{image_base64}")
+    
     return images
+
+def create_performance_plot(size):
+    algorithms = {
+        "Bubble Sort": lambda arr: bubble_sort(arr, visualize_steps=False),
+        "Merge Sort": lambda arr: merge_sort(arr, visualize_steps=False),
+        "Quick Sort": lambda arr: quick_sort(arr, visualize_steps=False),
+        "Radix Sort": lambda arr: radix_sort(arr, visualize_steps=False)
+    }
+
+    performance_data = {}
+    for name, func in algorithms.items():
+        arr = random.sample(range(-10000, 10000), size)
+        time_taken = func(arr)
+        performance_data[name] = time_taken
+
+    fig, ax = plt.subplots()
+    ax.bar(performance_data.keys(), performance_data.values(), color='blue')
+
+    ax.set_ylabel("Time (milliseconds)")
+    ax.set_xlabel("Sorting Algorithms")
+    ax.set_title(f"Sorting Algorithm Performance for Input Size {size}")
+
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
+        plt.savefig(tmpfile.name, format='png')
+        tmpfile.seek(0)
+        img_b64 = base64.b64encode(tmpfile.read()).decode('utf8')
+
+    plt.close()
+    print("Plot created successfully")
+    return img_b64, performance_data
+
 
 @app.route('/')
 def index():
@@ -138,24 +222,43 @@ def index():
 @app.route('/visualize', methods=['POST'])
 def visualize():
     if request.method == 'POST':
-        algorithm = request.form['algorithm']
-        array_size = int(request.form['size'])
-        arr = random.sample(range(1, 100), array_size)
+        size = int(request.form['size'])
+        action = request.form['action']
+
+        if action == 'performance':
+            plot_img, performance_data = create_performance_plot(size)
+            df = pd.DataFrame(list(performance_data.items()), columns=['Algorithm', 'Time (ms)'])
+            table_html = df.to_html(classes='data-table', index=False)
+
+            return render_template('visualization.html', plot_img=plot_img, table_html=table_html)
         
-        # Select the appropriate algorithm
-        if algorithm == 'bubble':
-            steps = bubble_sort(arr)
-        elif algorithm == 'merge':
-            steps = merge_sort(arr)
-        elif algorithm == 'quick_sort':
-            steps = quick_sort(arr)
-        elif algorithm == 'radix_sort':
-            steps = radix_sort(arr)
-        else:
-            return redirect(url_for('index'))
-        
-        images = create_plot(steps)
-        return render_template('visualization.html', images=images)
+@app.route('/visualize_animation', methods=['POST'])
+def visualize_animation():
+    if request.method == 'POST':
+        size = int(request.form['size'])
+        selected_algorithms = request.form.getlist('algorithms')
+
+        all_images = {}
+
+        arr = random.sample(range(10, 100), size)
+
+        for algorithm in selected_algorithms:
+
+            if algorithm == 'Bubble Sort':
+                images = bubble_sort(arr, visualize_steps=True)[1]
+
+            elif algorithm == 'Merge Sort':
+                images = merge_sort(arr, visualize_steps=True)[1]
+
+            elif algorithm == 'Quick Sort':
+                images = quick_sort(arr, visualize_steps=True)[1]
+
+            elif algorithm == 'Radix Sort':
+                images = radix_sort(arr, visualize_steps=True)[1]
+
+            all_images[algorithm] = images
+
+        return render_template('visualize_animation.html', all_images=all_images)
 
 if __name__ == '__main__':
     app.run(debug=True)
