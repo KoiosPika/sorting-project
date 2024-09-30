@@ -18,11 +18,11 @@
                 interval = setInterval(() => {
                     let images = allImages[currentAlgorithm];
                     if (currentIndex >= images.length) {
-                        currentIndex = 0; // Loop back to the start
+                        currentIndex = 0;
                     }
                     document.getElementById("sortingImage").src = images[currentIndex];
                     currentIndex++;
-                }, 500); // Adjust the interval for animation speed
+                }, 500);
             }
         }
 
@@ -54,8 +54,8 @@
             <img id="sortingImage" src="{{ all_images[all_images.keys()|list|first][0] }}" alt="Sorting Animation" width="800" height="400">
         </div>
         <div class="controls">
-            <button onclick="playAnimation()">Play</button>
-            <button onclick="stopAnimation()">Stop</button>
+            <button class="btn" onclick="playAnimation()">Play</button>
+            <button class="btn" onclick="stopAnimation()">Stop</button>
         </div>
     </div>
 </body>
