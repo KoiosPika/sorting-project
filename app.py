@@ -164,6 +164,11 @@ def counting_sort(arr, exp):
     for i in range(n):
         arr[i] = output[i]
 
+def linear_search(arr,target):
+    for i, x in enumerate(arr):
+        if x == target : return i
+    return -1
+
 def create_plot(steps):
     images = []
     for i, step in enumerate(steps):
