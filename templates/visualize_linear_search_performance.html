@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualize Linear Search Performance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Visualize Linear Search Performance</h1>
+        <div class="visualization">
+            <div class="array-info">
+                <p><strong>Unsorted Array:</strong> {{ unsorted_array }}</p>
+                <p><strong>Sorted Array:</strong> {{ sorted_array }}</p>
+                <p><strong>Target Value:</strong> {{ target_value }}</p>
+            </div>
+            <img src="{{ performance }}" alt="Linear Search Performance">
+        </div>
+        <a href="{{ url_for('index') }}" class="btn">Go back</a>
+    </div>
+    </div>
+</body>
+
+</html>

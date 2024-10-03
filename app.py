@@ -2,9 +2,8 @@ from flask import Flask, render_template, request, send_file
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import numpy as np
-import matplotlib.animation as animation
 import random
+import numpy as np
 import pandas as pd
 import base64
 import time
@@ -211,6 +210,48 @@ def create_linear_search_plot(steps):
     
     return images
 
+def linear_search_performance():
+    arr = np.random.randint(0, 100, size=50)
+
+    target = np.random.choice(arr)
+
+    start_time_unsorted = time.perf_counter()
+    indices_unsorted = []
+    for i in range(len(arr)):
+        if arr[i] == target:
+            indices_unsorted.append(i)
+    
+    time_unsorted = (time.perf_counter() - start_time_unsorted) * 1000
+
+    sorted_arr = sorted(arr.tolist())
+
+    indices_sorted = []
+    start_time_sorted = time.perf_counter()
+    for i in range(len(sorted_arr)):
+        if sorted_arr[i] == target:
+            indices_sorted.append(i)
+        elif sorted_arr[i] > target:
+            break 
+    time_sorted = (time.perf_counter() - start_time_sorted) * 1000
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+
+    ax.bar(['Unsorted Array', 'Sorted Array'], [time_unsorted, time_sorted], color=['blue', 'green'])
+    ax.set_title('Linear Search Performance: Unsorted vs. Sorted Array')
+    ax.set_ylabel('Time (ms)')
+    ax.set_xlabel('Array Type')
+
+    buf = io.BytesIO()
+    plt.tight_layout()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    plt.close()
+
+    image_base64 = base64.b64encode(buf.getvalue()).decode('utf8')
+    image_url = f"data:image/png;base64,{image_base64}"
+
+    return image_url, arr, sorted_arr, target
+
 def create_plot(steps):
     images = []
     for i, step in enumerate(steps):
@@ -284,7 +325,6 @@ def visualize_animation():
     if request.method == 'POST':
         size = int(request.form['size'])
         selected_algorithms = request.form.getlist('algorithms')
-        target = int(request.form['target'])
 
         all_images = {}
 
@@ -304,14 +344,37 @@ def visualize_animation():
             elif algorithm == 'Radix Sort':
                 images = radix_sort(arr, visualize_steps=True)[1]
 
-            elif algorithm == 'Linear Search':
-                _, images = linear_search(arr, target, visualize_steps=True)
-                images = create_linear_search_plot(images)
-
 
             all_images[algorithm] = images
 
         return render_template('visualize_animation.html', all_images=all_images)
 
+@app.route('/visualize_linear_search', methods=['POST'])
+def visualize_linear_search():
+    if request.method == 'POST':
+        size = 25
+
+        arr = random.sample(range(10, 1000), size)
+
+        target = arr[20]
+
+        _, steps = linear_search(arr, target, visualize_steps=True)
+        images = create_linear_search_plot(steps)
+
+        return render_template('visualize_animation.html', all_images={'Linear Search': images})
+    
+@app.route('/visualize_linear_search_performance', methods=['POST'])
+def visualize_linear_search_performance():
+    if request.method == 'POST':
+        image_url, arr, sorted_arr, target = linear_search_performance()
+
+        return render_template(
+            'visualize_linear_search_performance.html',
+            performance=image_url,
+            unsorted_array=arr.tolist(),
+            sorted_array=sorted_arr,
+            target_value=target
+        )
+    
 if __name__ == '__main__':
     app.run(debug=True)
