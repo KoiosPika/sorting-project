@@ -164,10 +164,52 @@ def counting_sort(arr, exp):
     for i in range(n):
         arr[i] = output[i]
 
-def linear_search(arr,target):
+def linear_search(arr, target, visualize_steps=False):
+    steps = []  # Step tracking for visualization
+
     for i, x in enumerate(arr):
-        if x == target : return i
-    return -1
+        if visualize_steps:
+            # Record the current array and index being checked
+            step = {
+                'array': arr.copy(),
+                'current_index': i,
+                'target': target
+            }
+            steps.append(step)  # Append current step
+
+        if x == target:
+            # Return both the index and the steps if visualizing is true
+            return i, steps if visualize_steps else i  
+
+    # Return -1 if not found, with steps for visualization
+    return -1, steps if visualize_steps else -1
+
+# Function to create linear search visualization (New function for linear search)
+def create_linear_search_plot(steps):
+    images = []
+    
+    for i, step in enumerate(steps):
+        arr = step['array']
+        current_index = step['current_index']
+        target = step['target']
+
+        fig, ax = plt.subplots()
+        bars = ax.bar(range(len(arr)), arr, color='blue')
+        bars[current_index].set_color('red')  # Highlight current index in red
+
+        ax.set_xlabel("Index")
+        ax.set_ylabel("Value")
+        ax.set_title(f"Step {i}: Searching for {target} (Current Index: {current_index})")
+
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        buf.seek(0)
+        plt.close()
+
+        image_base64 = base64.b64encode(buf.getvalue()).decode('utf8')
+        images.append(f"data:image/png;base64,{image_base64}")
+    
+    return images
 
 def create_plot(steps):
     images = []
@@ -242,6 +284,7 @@ def visualize_animation():
     if request.method == 'POST':
         size = int(request.form['size'])
         selected_algorithms = request.form.getlist('algorithms')
+        target = int(request.form['target'])
 
         all_images = {}
 
@@ -260,6 +303,11 @@ def visualize_animation():
 
             elif algorithm == 'Radix Sort':
                 images = radix_sort(arr, visualize_steps=True)[1]
+
+            elif algorithm == 'Linear Search':
+                _, images = linear_search(arr, target, visualize_steps=True)
+                images = create_linear_search_plot(images)
+
 
             all_images[algorithm] = images
 
