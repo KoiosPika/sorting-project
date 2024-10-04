@@ -282,7 +282,7 @@ def create_performance_plot(size):
 
     performance_data = {}
     for name, func in algorithms.items():
-        arr = random.sample(range(-10000, 10000), size)
+        arr = random.sample(range(-10000000, 10000000), size)
         time_taken = func(arr)
         performance_data[name] = time_taken
 
